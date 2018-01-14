@@ -12,7 +12,7 @@ function loadImage(name){
 
 ['bg','snow'].forEach(loadImage);
 
-[['duk',2],['scarf',2],['splash',4]].forEach(function(kv){
+[['duk',2],['scarf',2],['splash',4],['coat',2],['raincoat',2]].forEach(function(kv){
   var numNames = [];
   for (var i = 1; i <= kv[1]; i ++){
     // load em

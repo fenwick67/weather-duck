@@ -130,10 +130,10 @@ var bloomFilter = new PIXI.filters.AdvancedBloomFilter({
   quality:8
 });
 var crtFilter = new PIXI.filters.CRTFilter({
-  noise:0.1,
+  noise:0.07,
   seed:1,
   noiseSize:5,
-  vignettingAlpha:0.5,
+  vignettingAlpha:0.45,
   lineContrast:0.15
 });
 
@@ -221,8 +221,6 @@ var style = new PIXI.TextStyle({
 
 var text = new PIXI.Text('Rich text with a lot of options and across multiple lines', style);
 text.scale.set(ts)
-text.x = -worldSize*(3/16);
-text.y = -worldSize*(0.5-0.125);
 
 
 /*
@@ -396,10 +394,7 @@ app.ticker.add(function(delta){
   );
 });
 
-function setText(s){
-  // todo: set some text in the pixi view or in the DOM
-  text.text = s;
-}
+
 
 // on resize
 var sc;
@@ -422,9 +417,19 @@ function onResize(){
 
   crtFilter.lineWidth=sc/4;
 
-  // move text
-  text.y = -container.y*0.7;
+  // move text to center of screen
+  moveText();
 
+}
+
+function moveText(){
+  text.x = worldSize*(8.7/32) - text.width/2;
+  text.y = -container.y*0.7;
+}
+
+function setText(s){
+  text.text = s;
+  moveText()
 }
 
 window.addEventListener('resize',onResize);
@@ -456,6 +461,7 @@ function grabWeatherAndRun(){
   });
 }
 grabWeatherAndRun();
+setInterval(grabWeatherAndRun,1000*60*15);// check every 15 minutes
 
 function getWeather(lat,lon,done){
   var k = '5a4265668150c35b1544e45fee5cf3ec';

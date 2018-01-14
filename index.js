@@ -558,7 +558,7 @@ Low: ${lowTemp}° ${lowTime}`;
   var isSnowing = false;
 
   if (precipEl.attributes.length > 0){
-    var numAmnt = Number(precipEl.getAttribute('value'));// in inches
+    var numAmnt = Number(precipEl.getAttribute('value')) * 0.03937008;// sent in mm, converted to inches
     var amnt = '';
     if (numAmnt < 0.25){
       amnt = '<¼ inch';

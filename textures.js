@@ -12,7 +12,7 @@ function loadImage(name){
 
 ['bg','snow'].forEach(loadImage);
 
-[['duk',2],['scarf',2],['splash',4],['coat',2],['raincoat',2]].forEach(function(kv){
+[ ['duk',2],['scarf',2],['splash',4],['coat',2],['raincoat',2],['sunglasses',2] ].forEach(function(kv){
   var numNames = [];
   for (var i = 1; i <= kv[1]; i ++){
     // load em
@@ -23,3 +23,19 @@ function loadImage(name){
   var texArray = numNames.map(n=>textures[n]);
   textureSets[kv[0]] = texArray;
 });
+
+window.clothesDetails = {
+  none:{
+    textureSet:window.textureSets.scarf,
+    alpha:0
+  }
+}
+
+function loadClothes(s){
+  window.clothesDetails[s] = {
+    textureSet:window.textureSets[s],
+    alpha:1
+  };
+}
+
+['coat','raincoat','scarf','sunglasses'].forEach(loadClothes)

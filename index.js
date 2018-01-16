@@ -125,7 +125,7 @@ var splitFilter = new PIXI.filters.RGBSplitFilter();
 splitFilter.red.y = splitFilter.green.x = splitFilter.blue.y = 0;
 
 var bloomFilter = new PIXI.filters.AdvancedBloomFilter({
-  bloomScale:0.3,
+  bloomScale:0.2,
   blur:1,
   quality:8
 });
@@ -152,6 +152,14 @@ function setBackgroundColor(backgroundColor){// set a fill and a line style agai
   // change the tone filter
   toneFilter.matrix = colorize(backgroundColor,0.2,-0.1)
 }
+
+function setFilterColor(color,strength,brightness){
+  var strength = typeof strength == 'number'?strength:0.2;
+  var brightness = typeof brightness == 'number'?brightness:-0.1;
+
+  toneFilter.matrix = colorize(color,strength,brightness);
+}
+
 setBackgroundColor(0x1099bb);
 
 /*
@@ -190,11 +198,12 @@ DUCK
 var duk = new PIXI.extras.AnimatedSprite(textureSets.duk);
 duk.x = 0;
 duk.y = 0;
-duk.animationSpeed = 1;
 duk.name = "DUK";
 animatables.push(duk);
 var clothes = new PIXI.extras.AnimatedSprite(textureSets.scarf);
 animatables.push(clothes);
+
+clothes.animationSpeed = duk.animationSpeed = 1.5;
 
 
 // text
@@ -280,6 +289,11 @@ var precipitationDetails = {
       0, 0, .8, 0, 0,
       0, 0, 0, .7, 0
     ],
+    filter:{
+      color:0xaaaaaa,
+      amount:0.7,
+      brightness:0
+    },
     splash:true
   },
   none:{
@@ -320,6 +334,14 @@ var groundDetails = {
       .125, .125, .043,  0, 0,
       0,    0,    0,  1, 0
     ]
+  },
+  sand:{
+    colorMatrix:[
+      200,   252,   230,   0,0,
+      188,   228,   208,   0,0,
+       90,   132,   120,   0,0,
+      0,      0,  0,  255,  0
+    ].map(n=>n/255)
   }
 };
 
@@ -354,33 +376,17 @@ function setPrecipitation(type){
   );
 
   setBackgroundColor(details.backgroundColor);
+  if (details.filter){
+    setFilterColor(details.filter.color,details.filter.amount,details.filter.brightness);
+  }
   splashes.alpha = details.splash?1:0;
 
 }
 
-var clothesDetails = {
-  scarf:{
-    textureSet:window.textureSets.scarf,
-    alpha:1
-  },
-  coat:{
-    textureSet:window.textureSets.coat,
-    alpha:1
-  },
-  raincoat:{
-    textureSet:window.textureSets.raincoat,
-    alpha:1
-  },
-  none:{
-    textureSet:window.textureSets.scarf,
-    alpha:0
-  }
-}
-
 function setClothes(type){
   //
-  clothes.textures = clothesDetails[type].textureSet;
-  clothes.alpha = clothesDetails[type].alpha;
+  clothes.textures = window.clothesDetails[type].textureSet;
+  clothes.alpha = window.clothesDetails[type].alpha;
 }
 
 app.ticker.add(function(delta){
@@ -430,6 +436,40 @@ function moveText(){
 function setText(s){
   text.text = s;
   moveText()
+}
+
+function say(text){
+  if (window.location.search && window.location.search.toLowerCase().indexOf('mute') > -1){
+    return;
+  }
+  if (!'speechSynthesis' in window){
+    console.warn('no speech synthesis available');
+    return;
+  }
+  text = text
+    .replace(/</g,' less than ')
+
+
+
+  var msg = new SpeechSynthesisUtterance(text);
+
+  // this is a boy duck
+  var v = _.sortBy(speechSynthesis.getVoices(),function(voice) {
+      var l = voice.name.toLowerCase()
+      if (l.indexOf('male') > -1){
+        return -2
+      }
+      if (l.indexOf('david') > -1){
+        return -1;
+      }
+      return 0;
+   });
+
+  if (v.length > 0){
+    msg.voice = v[0];
+  }
+
+  window.speechSynthesis.speak(msg);
 }
 
 window.addEventListener('resize',onResize);
@@ -546,7 +586,18 @@ function setEnvironmentForForecast(resultDoc){
 
   var generalDescription = resultDoc.getElementsByTagName('symbol')[0].getAttribute('name')||'';
 
-  var fullText = `Currently: ${generalDescription}
+  var cloudText='';
+  var cloudPercent = 0;
+  var cloudEl = resultDoc.getElementsByTagName('clouds');
+  if (cloudEl.length > 0){
+    cloudPercent = Number(cloudEl[0].getAttribute('all'))/100;
+  }
+
+  if (cloudPercent){
+   cloudText=`\n\nClouds: ${Math.round(cloudPercent*100)}%`;
+ }
+
+  var fullText = `Currently: ${generalDescription}${cloudText}
 
 High: ${highTemp}° ${highTime}
 
@@ -556,8 +607,10 @@ Low: ${lowTemp}° ${lowTime}`;
 
   var isRaining = false;
   var isSnowing = false;
+  var precipType=null;
 
-  if (precipEl.attributes.length > 0){
+  if (true){
+
     var numAmnt = Number(precipEl.getAttribute('value')) * 0.03937008;// sent in mm, converted to inches
     var amnt = '';
     if (numAmnt < 0.25){
@@ -567,8 +620,16 @@ Low: ${lowTemp}° ${lowTime}`;
       amnt+=(numAmnt<1.125?' inch':' inches')
     }
 
-    var precipType = precipEl.getAttribute('type');// "snow" or "rain"
-    setPrecipitation(precipType);
+    // check the general description for current conditions first
+    if (generalDescription.indexOf('snow') > -1){
+      precipType='snow';
+    }else if (generalDescription.indexOf('rain') > -1){
+      precipType='rain';
+    }else{
+      precipType = precipEl.getAttribute('type');// "snow" or "rain"
+    }
+
+    setPrecipitation(precipType||'none');
     if (precipType == 'snow'){
       isSnowing = true;
       setGround('snow');
@@ -576,11 +637,10 @@ Low: ${lowTemp}° ${lowTime}`;
       isRaining = true;
       setClothes('raincoat')
     }
-    fullText+='\n\n'
-    fullText+=`${amnt} of ${precipType} expected`
-  }else{
-    setPrecipitation('none');
-    fullText+='\n\nNo precipitation expected';
+    if (precipType){
+      fullText+='\n\n'
+      fullText+=`${amnt} of ${precipType} expected`
+    }
   }
 
   // set clothes
@@ -588,13 +648,24 @@ Low: ${lowTemp}° ${lowTime}`;
     setClothes('coat');
   }else if (highTemp < 50 && !isRaining){
     setClothes('scarf');
+  }else if (highTemp < 80 && !isRaining){
+    setClothes('none');
+  }else if (highTemp > 80 && !isRaining){
+    setClothes('sunglasses');
+    setGround('sand');
   }
 
   if (lowTemp < 32){
     setGround('snow');
   }
 
+  // if it's not raining, set color filter based on cloud cover
+  if (!precipType){
+    setFilterColor(0xaaaaaa,cloudPercent*0.8,0.1)
+  }
+
   console.log(fullText);
 
   setText(fullText);
+  say(fullText);
 }

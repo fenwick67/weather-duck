@@ -667,5 +667,5 @@ Low: ${lowTemp}° ${lowTime}`;
   console.log(fullText);
 
   setText(fullText);
-  say(fullText);
+  // say(fullText);
 }

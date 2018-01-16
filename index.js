@@ -536,7 +536,7 @@ function getWeather(lat,lon,done){
 function getLatLon(done){
   if (window.location.search && window.location.search.indexOf('location') > -1){
     var latlon = window.location.search.split(',').map(g=>
-      Number(g.replace(/[^\d-]/g,''))
+      Number(g.replace(/[^\d-.]/g,''))
     );
     return done( latlon );
   }

@@ -597,7 +597,7 @@ function setEnvironmentForForecast(resultDoc){
    cloudText=`\n\nClouds: ${Math.round(cloudPercent*100)}%`;
  }
 
-  var fullText = `Currently: ${generalDescription}${cloudText}
+  var fullText = `Today: ${generalDescription}${cloudText}
 
 High: ${highTemp}° ${highTime}
 

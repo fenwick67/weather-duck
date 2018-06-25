@@ -6,9 +6,10 @@ A pixijs scene that demonstrates the weather.
 Compatibility issues:
 
 - [ ] font loading issues
-- [ ] redirect to https to make location work
+  * see https://developer.mozilla.org/en-US/docs/Web/API/FontFaceSet/load
 - [ ] show errors instead of silently failing
 - [ ] noise filter looks bad on mobile
+  * Try different noise functions
 
 ## Notes
 

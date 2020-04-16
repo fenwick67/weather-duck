@@ -228,7 +228,7 @@ var style = new PIXI.TextStyle({
     wordWrapWidth: worldSize*(14/16)/ts
 });
 
-var text = new PIXI.Text('Rich text with a lot of options and across multiple lines', style);
+var text = new PIXI.Text('', style);
 text.scale.set(ts)
 
 
@@ -488,7 +488,7 @@ setClothes('none');
 
 
 function grabWeatherAndRun(){
-  document.fonts.load("30px 'Press Start 2P' bold", "¼°aA").then(()=>{
+  document.fonts.load("bold 30px 'Press Start 2P'", "¼°aA").then(()=>{
     setText('Fetching the weather...');
     getLatLon((latlon)=>{
       console.log(latlon);

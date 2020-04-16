@@ -489,16 +489,20 @@ setClothes('none');
 
 function grabWeatherAndRun(){
   setText('Fetching the weather...');
-
-  getLatLon((latlon)=>{
-    console.log(latlon);
-    getWeather(latlon[0],latlon[1],function(er,weather){
-      if(er){
-        return console.log(er);
-      }
-      setEnvironmentForForecast(weather);
+  document.fonts.load("30px 'Press Start 2P' bold", "¼°aA").then(()=>{
+    
+    getLatLon((latlon)=>{
+      console.log(latlon);
+      getWeather(latlon[0],latlon[1],function(er,weather){
+        if(er){
+          return console.log(er);
+        }
+        setEnvironmentForForecast(weather);
+      });
     });
+  
   });
+
 }
 grabWeatherAndRun();
 setInterval(grabWeatherAndRun,1000*60*15);// check every 15 minutes

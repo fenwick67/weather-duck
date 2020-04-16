@@ -488,9 +488,8 @@ setClothes('none');
 
 
 function grabWeatherAndRun(){
-  setText('Fetching the weather...');
   document.fonts.load("30px 'Press Start 2P' bold", "¼°aA").then(()=>{
-    
+    setText('Fetching the weather...');
     getLatLon((latlon)=>{
       console.log(latlon);
       getWeather(latlon[0],latlon[1],function(er,weather){
